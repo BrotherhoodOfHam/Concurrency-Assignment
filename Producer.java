@@ -32,8 +32,9 @@ class Producer implements Runnable
                 this.buffer.put(this.rand.nextInt(RAND_RANGE));
             }
 
-            //Signals consumers to exit
-            this.buffer.put(-1);
+            //Signals consumers to exit - todo: fix this
+            this.buffer.put(null);
+            this.buffer.put(null);
         }
         catch (InterruptedException e)
         {

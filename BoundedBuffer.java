@@ -2,6 +2,7 @@ import java.util.concurrent.Semaphore;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.function.Predicate;
 
 /**
  * Bounded buffer class
@@ -39,6 +40,11 @@ public class BoundedBuffer<E> implements Buffer<E>
         write = (write + 1) % items.length;
     }
 
+    public int getSize()
+    {
+        return this.count;
+    }
+
     public BoundedBuffer(int capacity)
     {
         items = new Object[capacity];
@@ -69,6 +75,49 @@ public class BoundedBuffer<E> implements Buffer<E>
         finally
         {
             itemLock.unlock();
+        }
+    }
+
+    public E takeIf(Predicate<E> pred) throws InterruptedException
+    {
+        while(true)
+        {
+            //Attempt to aquire access to the buffer
+            itemLock.lock();
+
+            try
+            {
+                //Wait until there are items in the buffer
+                while(isEmpty()) notEmpty.await();
+
+                //Read item from buffer + increment read pointer
+                E i = (E)items[read];
+
+                //If the item satisfies the predicate
+                if (i != null && !pred.test(i))
+                {
+                    //Signal any waiting threads
+                    notFull.signalAll();
+
+                    Thread.yield();
+
+                    continue;
+                }
+                
+                //Consume the item and increment the read pointer
+                items[read] = null;
+                count--;
+                incRead();
+
+                //Signal there is empty space in the buffer
+                notFull.signalAll();
+
+                return i;
+            }
+            finally
+            {
+                itemLock.unlock();
+            }
         }
     }
 
