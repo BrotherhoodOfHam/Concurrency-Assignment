@@ -1,18 +1,20 @@
 import java.io.IOException;
 import java.io.Writer;
 import java.io.PrintWriter;
-import java.util.function.*;
+import java.util.function.Predicate;
 
 /**
- * Thread consumer class
+ * Filter Task
+ * 
+ * Consumes objects from a given buffer that satisfy a given predicate.
  */
-public class Consumer implements Runnable
+public class Filter<E> implements Runnable
 {
-    private BoundedBuffer<Integer> buffer;
+    private BoundedBuffer<E> buffer;
     private PrintWriter output;
-    private Predicate<Integer> predicate;
+    private Predicate<E> predicate;
 
-    public Consumer(BoundedBuffer<Integer> buffer, Writer output, Predicate<Integer> predicate)
+    public Filter(BoundedBuffer<E> buffer, Writer output, Predicate<E> predicate)
     {
         this.buffer = buffer;
         this.output = new PrintWriter(output);
@@ -25,15 +27,15 @@ public class Consumer implements Runnable
         {
             while (true)
             {
-                Integer i = buffer.takeIf(predicate);
+                E i = buffer.takeIf(predicate);
 
                 if (i == null)
                 {
                     break;
                 }
 
-                System.out.println(i);
-                output.println(i);
+                System.out.println(i.toString());
+                output.println(i.toString());
             }
         }
         catch (InterruptedException e)

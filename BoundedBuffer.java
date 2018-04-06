@@ -62,7 +62,8 @@ public class BoundedBuffer<E> implements Buffer<E>
         try
         {
             //Wait until there is space in the buffer
-            while(isFull()) notFull.await();
+            while(isFull())
+                notFull.await();
 
             //Write value into buffer + increment the write pointer
             items[write] = e;
@@ -88,7 +89,8 @@ public class BoundedBuffer<E> implements Buffer<E>
             try
             {
                 //Wait until there are items in the buffer
-                while(isEmpty()) notEmpty.await();
+                while(isEmpty())
+                    notEmpty.await();
 
                 //Read item from buffer + increment read pointer
                 E i = (E)items[read];

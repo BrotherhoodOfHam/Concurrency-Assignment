@@ -15,19 +15,18 @@ public class Main
 
         try
         {
-            BoundedBuffer buffer = new BoundedBuffer<Integer>(10);
+            BoundedBuffer buffer = new BoundedBuffer<Integer>(5);
 
             Predicate<Integer> isEven = item -> { return item % 2 == 0; };
             Predicate<Integer> isOdd = isEven.negate();
 
-            Producer pr = new Producer(buffer, 100000);    
-            Consumer c0 = new Consumer(buffer, evenWriter, isEven);
-            Consumer c1 = new Consumer(buffer, oddWriter, isOdd);
+            RandomNumberGenerator pr = new RandomNumberGenerator(buffer, 10000);
+            
+            Thread t0 = new Thread(new Filter<Integer>(buffer, evenWriter, isEven));
+            Thread t1 = new Thread(new Filter<Integer>(buffer, oddWriter, isOdd));
 
             System.out.println("start");
 
-            Thread t0 = new Thread(c0);
-            Thread t1 = new Thread(c1);
             t0.start();
             t1.start();
 
@@ -35,8 +34,8 @@ public class Main
 
             t0.join();
             t1.join();
-            System.out.println("done");
-            System.out.println(buffer.getSize());
+
+            System.out.println("done: " + buffer.getSize());
         }
         finally
         {

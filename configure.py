@@ -52,10 +52,8 @@ def configure(srcdir, bindir):
         bindir = path.abspath(bindir)
         srcdir = path.abspath(srcdir)
 
+        w.variable("SRCDIR", srcdir)
         w.variable("BINDIR", bindir)
-
-        # Clean sources rule
-        w.rule("clean", "rm ./*.class")
         w.newline()
 
         # Compile java sources rule
@@ -65,7 +63,10 @@ def configure(srcdir, bindir):
         # Glob all java files in the source dir
         globexpr = path.join(srcdir, "*.java")
 
-        for srcfile in glob.glob(globexpr):
+        src_list = glob.glob(globexpr)
+        class_list = []
+
+        for srcfile in src_list:
             print("source:", srcfile)
 
             # Format name of class file
@@ -75,8 +76,11 @@ def configure(srcdir, bindir):
 
             # Get absolute source file path
             srcfile = path.abspath(srcfile)
-            
-            w.build([classfile], "compile", [srcfile])
+
+            class_list.append(classfile)
+            #w.build([classfile], "compile", [srcfile])
+
+        w.build(class_list, "compile", src_list)
 
     print("build generated:", buildpath)
 

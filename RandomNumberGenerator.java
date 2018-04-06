@@ -1,35 +1,33 @@
 import java.util.Random;
 
 /**
- * Thread producer class
+ * Random Number Generator Task
  */
-class Producer implements Runnable
+class RandomNumberGenerator implements Runnable
 {
-    private final int RAND_RANGE = 1000000;
-
     private BoundedBuffer<Integer> buffer;
     private Random rand;
-    private int dataSize;
+    private int numberCount;
 
     /**
-     * Construct a producer object
+     * Construct a RNG object
      * @param buffer output buffer
-     * @param dataSize size of data to be produced
+     * @param numberCount number of numbers to generate
      */
-    public Producer(BoundedBuffer<Integer> buffer, int dataSize)
+    public RandomNumberGenerator(BoundedBuffer<Integer> buffer, int numberCount)
     {
         this.buffer = buffer;
         this.rand = new Random();
-        this.dataSize = dataSize;
+        this.numberCount = numberCount;
     }
 
     public void run()
     {
         try
         {
-            for (int i = 0; i < this.dataSize; i++)
+            for (int i = 0; i < this.numberCount; i++)
             {
-                this.buffer.put(this.rand.nextInt(RAND_RANGE));
+                this.buffer.put(this.rand.nextInt(Integer.MAX_VALUE));
             }
 
             //Signals consumers to exit - todo: fix this
