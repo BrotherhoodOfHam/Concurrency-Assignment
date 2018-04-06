@@ -3,21 +3,30 @@
 #   Configure script
 #
 
+import pip
 import subprocess
 import glob
 import os
 import os.path as path
-from ninja.ninja_syntax import Writer
 
 """
     Check if a program is callable
 """
 def _check_program(program_name):
     try:
-        subprocess.call(["javac", "--version"])
+        subprocess.call([program_name, "--version"])
         return True
     except subprocess.CalledProcessError:
         return False
+
+# Verify ninja is installed
+if not _check_program("ninja"):
+    print("installing ninja...")
+    # If it isn't then install it using pip
+    pip.main(["install","ninja"])
+
+from ninja.ninja_syntax import Writer
+
 
 """
     Configure the build file
