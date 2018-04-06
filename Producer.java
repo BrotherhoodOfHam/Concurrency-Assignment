@@ -1,7 +1,4 @@
-import java.io.IOException;
-import java.util.Date;
 import java.util.Random;
-import java.util.concurrent.BlockingQueue;
 
 /**
  * Thread producer class
@@ -10,18 +7,18 @@ class Producer implements Runnable
 {
     private final int RAND_RANGE = 1000000;
 
-    private BlockingQueue<Integer> queue;
+    private BoundedBuffer<Integer> buffer;
     private Random rand;
     private int dataSize;
 
     /**
      * Construct a producer object
-     * @param q output queue
+     * @param buffer output buffer
      * @param dataSize size of data to be produced
      */
-    public Producer(BlockingQueue<Integer> q, int dataSize)
+    public Producer(BoundedBuffer<Integer> buffer, int dataSize)
     {
-        this.queue = q;
+        this.buffer = buffer;
         this.rand = new Random();
         this.dataSize = dataSize;
     }
@@ -32,12 +29,11 @@ class Producer implements Runnable
         {
             for (int i = 0; i < this.dataSize; i++)
             {
-                //this.queue.put(i + 1);
-                this.queue.put(this.rand.nextInt(RAND_RANGE));
+                this.buffer.put(this.rand.nextInt(RAND_RANGE));
             }
 
-            //Signals consumers to stop consuming
-            this.queue.put(-1);
+            //Signals consumers to exit
+            this.buffer.put(-1);
         }
         catch (InterruptedException e)
         {

@@ -1,19 +1,18 @@
 import java.io.IOException;
 import java.io.Writer;
 import java.io.PrintWriter;
-import java.util.concurrent.BlockingQueue;
 
 /**
  * Thread consumer class
  */
 public class Consumer implements Runnable
 {
-    private BlockingQueue<Integer> queue;
+    private BoundedBuffer<Integer> buffer;
     private PrintWriter output;
 
-    public Consumer(BlockingQueue<Integer> queue, Writer output)
+    public Consumer(BoundedBuffer<Integer> buffer, Writer output)
     {
-        this.queue = queue;
+        this.buffer = buffer;
         this.output = new PrintWriter(output);
     }
 
@@ -23,7 +22,7 @@ public class Consumer implements Runnable
         {
             while (true)
             {
-                int i = queue.take().intValue();
+                int i = buffer.take().intValue();
 
                 if (i < 0)
                 {
