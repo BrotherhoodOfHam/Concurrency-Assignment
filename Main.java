@@ -1,3 +1,5 @@
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.concurrent.ArrayBlockingQueue;
 
 /**
@@ -5,20 +7,31 @@ import java.util.concurrent.ArrayBlockingQueue;
  */
 public class Main
 {
-    public static void main(String[] args) throws InterruptedException
+    public static void main(String[] args) throws InterruptedException, IOException
     {
-        ArrayBlockingQueue queue = new ArrayBlockingQueue<Integer>(100);
-        Producer pr = new Producer(queue, 100);
-        Consumer co = new Consumer(queue, System.out);
+        FileWriter fwriter = new FileWriter("numbers");
 
-        System.out.println("start");
+        try
+        {
+            ArrayBlockingQueue queue = new ArrayBlockingQueue<Integer>(30);
+            Producer pr = new Producer(queue, 10000);    
+            Consumer co = new Consumer(queue, fwriter);
 
-        Thread t0 = new Thread(pr);
-        Thread t1 = new Thread(co);
-        t0.start();
-        t1.start();
-
-        t0.join();
-        System.out.println("done");
+            System.out.println("start");
+    
+            Thread t1 = new Thread(co);
+            //t0.start();
+            t1.start();
+    
+            pr.run();
+    
+            //t0.join();
+            t1.join();
+            System.out.println("done");
+        }
+        finally
+        {
+            fwriter.close();
+        }
     }
 }

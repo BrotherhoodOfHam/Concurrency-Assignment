@@ -8,6 +8,8 @@ import java.util.concurrent.BlockingQueue;
  */
 class Producer implements Runnable
 {
+    private final int RAND_RANGE = 1000000;
+
     private BlockingQueue<Integer> queue;
     private Random rand;
     private int dataSize;
@@ -26,16 +28,21 @@ class Producer implements Runnable
 
     public void run()
     {
-        for (int i = 0; i < this.dataSize; i++)
+        try
         {
-            try
+            for (int i = 0; i < this.dataSize; i++)
             {
-                this.queue.put(this.rand.nextInt(1000));
+                //this.queue.put(i + 1);
+                this.queue.put(this.rand.nextInt(RAND_RANGE));
             }
-            catch (InterruptedException e)
-            {
-                System.err.println(e.getMessage());
-            }
+
+            //Signals consumers to stop consuming
+            this.queue.put(-1);
+        }
+        catch (InterruptedException e)
+        {
+            //Cancel task if an interrupt occurs
+            return;
         }
     }
 }

@@ -1,5 +1,6 @@
 import java.io.IOException;
-import java.io.PrintStream;
+import java.io.Writer;
+import java.io.PrintWriter;
 import java.util.concurrent.BlockingQueue;
 
 /**
@@ -8,30 +9,35 @@ import java.util.concurrent.BlockingQueue;
 public class Consumer implements Runnable
 {
     private BlockingQueue<Integer> queue;
-    private PrintStream output;
+    private PrintWriter output;
 
-    public Consumer(BlockingQueue<Integer> queue, PrintStream output)
+    public Consumer(BlockingQueue<Integer> queue, Writer output)
     {
         this.queue = queue;
-        this.output = output;
+        this.output = new PrintWriter(output);
     }
 
     public void run()
     {
-        while (!queue.isEmpty())
+        try
         {
-            int i = 0;
-
-            try
+            while (true)
             {
-                i = queue.take().intValue();
-            }
-            catch (InterruptedException e)
-            {
-                System.err.println(e.getMessage());
-            }
+                int i = queue.take().intValue();
 
-            output.println(i);
+                if (i < 0)
+                {
+                    break;
+                }
+
+                System.out.println(i);
+                output.println(i);
+            }
+        }
+        catch (InterruptedException e)
+        {
+            //Cancel task if an interrupt occurs
+            return;
         }
     }
 }
