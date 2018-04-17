@@ -19,7 +19,8 @@ def check_numberfile(filename, pred):
                 count += 1
                 # Check if n satisfies the predicate
                 n = int(line.strip())
-                assert(pred(n))
+                if not pred(n):
+                    raise Exception("Predicate not satisfied, n = %d" % n)
     # Return number count
     return count
 
@@ -32,7 +33,7 @@ def run_tests():
     # Parameters
     n = 400000
     m = 4
-    k = 2
+    k = 3
 
     start = time()
 
@@ -50,19 +51,22 @@ def run_tests():
 
     ncount = 0
 
-    evenfile = join(bindir, "even-numbers")
-    print("checking even numbers:", abspath(evenfile))
-
-    ncount += check_numberfile(evenfile, lambda n : (n % 2)  == 0)
-    
-
     oddfile = join(bindir, "odd-numbers")
     print("checking odd numbers:", abspath(oddfile))
-
     ncount += check_numberfile(oddfile, lambda n : (n % 2)  != 0)
 
-    assert(ncount == n)
-    print("all numbers generated:", ncount)
+    evenfile = join(bindir, "even-numbers")
+    print("checking even numbers:", abspath(evenfile))
+    ncount += check_numberfile(evenfile, lambda n : (n % 2)  == 0)
+
+    for i in range(3, k+1):
+        multiplefile = "multiples-of-%d" % i
+        print("checking multiples of %d: %s" % (i, abspath(multiplefile)))
+        ncount += check_numberfile(multiplefile, lambda n : (n % i) == 0)
+
+
+    if ncount != n:
+        raise Exception("an unexpected amount of numbers was read: %d" % ncount)
 
     #####################################################################
 

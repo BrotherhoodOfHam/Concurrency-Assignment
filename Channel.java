@@ -6,7 +6,8 @@ import java.util.function.Predicate;
 /**
  * Channel class
  * 
- * Provides a mechanism for inter-thread communication following a producer->consumer relationship
+ * Provides a mechanism for inter-thread communication
+ * assuming a producer -> multi-consumer relationship
  */
 public class Channel<E>
 {
@@ -47,7 +48,7 @@ public class Channel<E>
     }
 
     /**
-     * Construct a channel object with an internal fixed size buffer of the specified capacity
+     * Construct a channel object with an internal fixed size buffer with the specified capacity
      */
     public Channel(int capacity)
     {
@@ -59,6 +60,8 @@ public class Channel<E>
 
     /**
      * Write an item into the channel
+     * 
+     * If the buffer is full, method blocks until space becomes available
      */
     public void write(E e) throws InterruptedException
     {
@@ -83,6 +86,50 @@ public class Channel<E>
         }
     }
 
+    /**
+     * Read an item from the channel
+     * 
+     * If empty, method blocks until an item is added
+     */
+    public E read() throws InterruptedException
+    {
+        //Attempt to aquire access to the buffer
+        itemLock.lock();
+
+        try
+        {
+            //Wait until there are items in the buffer
+            while(isEmpty()) notEmpty.await();
+
+            //Read item from buffer
+            E i = (E)items[read];
+
+            //Consume
+            if (i != null)
+            {
+                items[read] = null;
+                count--;
+                incRead();
+            }
+
+            //Signal there is empty space in the buffer
+            notFull.signalAll();
+
+            return i;
+        }
+        finally
+        {
+            itemLock.unlock();
+        }
+    }
+
+    /**
+     * Read an item from the channel but only if it satisfies the given predicate,
+     * 
+     * the method blocks until an item is available and satisfies the condition
+     * 
+     * @see Channel.read
+     */
     public E readIf(Predicate<E> pred) throws InterruptedException
     {
         //While the predicate isn't satisfied
@@ -128,40 +175,28 @@ public class Channel<E>
         }
     }
 
-    public E read() throws InterruptedException
+    /**
+     * Closes the channel, causes all read operations to return null
+     */
+    void close() throws InterruptedException
     {
-        //Attempt to aquire access to the buffer
+       this.write(null); 
+    }
+
+    /**
+     * Returns true if the channel has been closed
+     */
+    boolean isClosed() throws InterruptedException
+    {
         itemLock.lock();
 
         try
         {
-            //Wait until there are items in the buffer
-            while(isEmpty()) notEmpty.await();
-
-            //Read item from buffer
-            E i = (E)items[read];
-
-            //Consume
-            if (i != null)
-            {
-                items[read] = null;
-                count--;
-                incRead();
-            }
-
-            //Signal there is empty space in the buffer
-            notFull.signalAll();
-
-            return i;
+            return items[read] == null;
         }
         finally
         {
             itemLock.unlock();
         }
-    }
-
-    void close() throws InterruptedException
-    {
-       this.write(null); 
     }
 }

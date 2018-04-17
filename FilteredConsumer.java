@@ -45,6 +45,9 @@ public class FilteredConsumer<E> implements Runnable
                 
                 output.println(i);
             }
+
+            //Close writer
+            output.close();
         }
         catch (InterruptedException e)
         {

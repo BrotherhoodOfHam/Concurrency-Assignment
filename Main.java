@@ -3,6 +3,7 @@ import java.io.IOException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.function.Predicate;
+import java.util.ArrayList;
 
 /**
  *  Program main class
@@ -31,34 +32,39 @@ public class Main
         FileWriter evenWriter = new FileWriter("even-numbers");
         FileWriter oddWriter = new FileWriter("odd-numbers");
 
-        try
+        Channel chan = new Channel<Integer>(channelCapacity);
+
+        Predicate<Integer> isEven = item -> { return item % 2 == 0; };
+        Predicate<Integer> isOdd = isEven.negate();
+
+        RandomNumberGenerator pr = new RandomNumberGenerator(chan, numberGenCount);
+
+        ExecutorService executor = Executors.newFixedThreadPool(taskCount);
+        //Start consumers
+        executor.submit(new FilteredConsumer<Integer>(chan, evenWriter, isEven));
+        executor.submit(new FilteredConsumer<Integer>(chan, oddWriter, isOdd));
+
+        //k
+        for (int i = 3; i <= taskCount; i++)
         {
-            Channel chan = new Channel<Integer>(channelCapacity);
+            //Lambda functions expect local variables to be immutable - so copy i
+            final int mult = i;
+            //Predicate that tests if a value is a multiple of i
+            Predicate<Integer> multipleOfI = item -> { return item % mult == 0; };
 
-            Predicate<Integer> isEven = item -> { return item % 2 == 0; };
-            Predicate<Integer> isOdd = isEven.negate();
+            FileWriter output = new FileWriter("multiples-of-" + i);
 
-            RandomNumberGenerator pr = new RandomNumberGenerator(chan, numberGenCount);
-
-            ExecutorService executor = Executors.newFixedThreadPool(taskCount);
-            //Start consumers
-            executor.submit(new FilteredConsumer<Integer>(chan, evenWriter, isEven));
-            executor.submit(new FilteredConsumer<Integer>(chan, oddWriter, isOdd));
-
-            System.out.println("running...");
-
-            //Start producer task
-            pr.run();
-            //Wait for consumers to finish
-            executor.shutdown();
-            
-            System.out.println("done.");
+            executor.submit(new FilteredConsumer(chan, output, multipleOfI));
         }
-        finally
-        {
-            evenWriter.close();
-            oddWriter.close();
-        }
+
+        System.out.println("running...");
+
+        //Start producer task
+        pr.run();
+        //Wait for consumers to finish
+        executor.shutdown();
+        
+        System.out.println("done.");
     }
     
     /**
