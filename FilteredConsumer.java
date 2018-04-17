@@ -4,9 +4,9 @@ import java.io.PrintWriter;
 import java.util.function.Predicate;
 
 /**
- * FilteredConsumer Task
+ * Filtered Consumer Task
  * 
- * Consumes objects from a given buffer that satisfy a given predicate.
+ * Consumes objects from a given channel that satisfy a given predicate.
  */
 public class FilteredConsumer<E> implements Runnable
 {
@@ -14,6 +14,13 @@ public class FilteredConsumer<E> implements Runnable
     private PrintWriter output;
     private Predicate<E> predicate;
 
+    /**
+     * Construct a consumer task object
+     * 
+     * @param chan the input channel
+     * @param output the output target
+     * @param predicate the output condition
+     */
     public FilteredConsumer(Channel<E> chan, Writer output, Predicate<E> predicate)
     {
         this.chan = chan;
@@ -27,17 +34,16 @@ public class FilteredConsumer<E> implements Runnable
         {
             while (true)
             {
-                E i = chan.takeIf(predicate);
+                E i = chan.readIf(predicate);
 
-                if (i != null)
+                //If item is null
+                if (i == null)
                 {
-                    System.out.println(i.toString());
-                    output.println(i.toString());
-                }
-                else
-                {
+                    //Terminate consumption
                     break;
                 }
+                
+                output.println(i);
             }
         }
         catch (InterruptedException e)

@@ -7,22 +7,25 @@ import java.util.function.Predicate;
 /**
  *  Program main class
  * 
- *  Optional command-line arguments:
+ *  Can be invoked with optional command-line arguments:
  *      {number-count} {channel-capacity} {task-count}
  *            n                m               k     
  */
 public class Main
 {
+    /**
+     * Entry point
+     */
     public static void main(String[] args) throws InterruptedException, IOException
     {
-        //Number of numbers to produce - n,m,k
-        int numberGenCount = getIntArg(args, 0, 1000);
-        int channelSize    = getIntArg(args, 1, 4);
-        int taskCount      = getIntArg(args, 2, 2);
+        //n, m, k
+        int numberGenCount  = getIntArg(args, 0, 1000);
+        int channelCapacity = getIntArg(args, 1, 4);
+        int taskCount       = getIntArg(args, 2, 2);
 
         //Print parameters
         System.out.println("n = " + numberGenCount);
-        System.out.println("m = " + channelSize);
+        System.out.println("m = " + channelCapacity);
         System.out.println("k = " + taskCount);
 
         FileWriter evenWriter = new FileWriter("even-numbers");
@@ -30,7 +33,7 @@ public class Main
 
         try
         {
-            Channel chan = new Channel<Integer>(channelSize);
+            Channel chan = new Channel<Integer>(channelCapacity);
 
             Predicate<Integer> isEven = item -> { return item % 2 == 0; };
             Predicate<Integer> isOdd = isEven.negate();
@@ -38,14 +41,18 @@ public class Main
             RandomNumberGenerator pr = new RandomNumberGenerator(chan, numberGenCount);
 
             ExecutorService executor = Executors.newFixedThreadPool(taskCount);
+            //Start consumers
             executor.submit(new FilteredConsumer<Integer>(chan, evenWriter, isEven));
             executor.submit(new FilteredConsumer<Integer>(chan, oddWriter, isOdd));
 
-            System.out.println("start");
-            pr.run();
+            System.out.println("running...");
 
+            //Start producer task
+            pr.run();
+            //Wait for consumers to finish
             executor.shutdown();
-            System.out.println("done");
+            
+            System.out.println("done.");
         }
         finally
         {

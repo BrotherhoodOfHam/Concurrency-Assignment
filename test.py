@@ -2,10 +2,13 @@
 
 import sys
 import subprocess
+from time import time
 from os.path import dirname, join, abspath
 
 """
     Tests if a given file containing a list of numbers satisfies the given predicate
+
+    Returns the length of the list of numbers
 """
 def check_numberfile(filename, pred):
     count = 0
@@ -27,12 +30,17 @@ def run_tests():
     print("running application...")
 
     # Parameters
-    n = 100000
-    m = 1
+    n = 400000
+    m = 4
     k = 2
+
+    start = time()
 
     # Run application
     exitcode = subprocess.call(["java", "-cp", bindir, "Main", str(n), str(m), str(k)])
+
+    end = time()
+    print("elapsed(s):", end - start)
 
     if exitcode != 0:
         print("application failed to run")
@@ -53,8 +61,8 @@ def run_tests():
 
     ncount += check_numberfile(oddfile, lambda n : (n % 2)  != 0)
 
-    print(ncount, "numbers generated.")
     assert(ncount == n)
+    print("all numbers generated:", ncount)
 
     #####################################################################
 

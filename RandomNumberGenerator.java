@@ -21,15 +21,23 @@ class RandomNumberGenerator implements Runnable
         this.numberCount = numberCount;
     }
 
+    @Override
     public void run()
     {
         try
         {
+            //Generate up to numberCount random numbers
             for (int i = 0; i < this.numberCount; i++)
             {
-                this.chan.put(this.rand.nextInt(Integer.MAX_VALUE));
+                //Write random number into the channel
+                int val = this.rand.nextInt(Integer.MAX_VALUE);
+                
+                //System.out.println(val);
+
+                this.chan.write(val);
             }
 
+            //Close channel - forces consumers to exit
             this.chan.close();
         }
         catch (InterruptedException e)
