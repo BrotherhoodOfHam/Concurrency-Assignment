@@ -56,8 +56,7 @@ public class Channel<E>
         try
         {
             //Wait until there is space in the buffer
-            while(isFull())
-                notFull.await();
+            while(isFull()) notFull.await();
 
             //Write value into buffer + increment the write pointer
             items[write] = e;

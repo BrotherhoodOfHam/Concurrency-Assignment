@@ -6,37 +6,24 @@ import java.util.function.Predicate;
 
 /**
  *  Program main class
+ * 
+ *  Optional command-line arguments:
+ *      {number-count} {channel-capacity} {task-count}
+ *            n                m               k     
  */
 public class Main
 {
     public static void main(String[] args) throws InterruptedException, IOException
     {
         //Number of numbers to produce - n,m,k
-        int numberGenCount = 1000;
-        int channelSize = 4;
-        int taskNumber = 2;
-
-        //Optional command line options
-        try
-        {
-            for (String a : args)
-                System.out.println(a);
-
-            if (args.length > 1)
-            {
-                numberGenCount = Integer.parseUnsignedInt(args[0]); 
-                channelSize = Integer.parseUnsignedInt(args[1]);
-            }
-        }
-        catch(NumberFormatException e)
-        {
-            System.err.println("Unknown argument");
-            System.exit(-1);
-        }
+        int numberGenCount = getIntArg(args, 0, 1000);
+        int channelSize    = getIntArg(args, 1, 4);
+        int taskCount      = getIntArg(args, 2, 2);
 
         //Print parameters
         System.out.println("n = " + numberGenCount);
         System.out.println("m = " + channelSize);
+        System.out.println("k = " + taskCount);
 
         FileWriter evenWriter = new FileWriter("even-numbers");
         FileWriter oddWriter = new FileWriter("odd-numbers");
@@ -50,7 +37,7 @@ public class Main
 
             RandomNumberGenerator pr = new RandomNumberGenerator(chan, numberGenCount);
 
-            ExecutorService executor = Executors.newFixedThreadPool(taskNumber);
+            ExecutorService executor = Executors.newFixedThreadPool(taskCount);
             executor.submit(new FilteredConsumer<Integer>(chan, evenWriter, isEven));
             executor.submit(new FilteredConsumer<Integer>(chan, oddWriter, isOdd));
 
@@ -65,5 +52,29 @@ public class Main
             evenWriter.close();
             oddWriter.close();
         }
+    }
+    
+    /**
+     * Helper method:
+     * 
+     * Get an integer argument at the given index
+     * 
+     * If the given index is out of range, return the default
+     */
+    private static int getIntArg(String[] args, int index, int def)
+    {
+        try
+        {
+            if (index < args.length && index >= 0)
+            {
+                return Integer.parseUnsignedInt(args[index]);
+            }
+        }
+        catch(NumberFormatException e)
+        {
+            System.err.println("Invalid integer argument at " + index);
+        }
+
+        return def;
     }
 }

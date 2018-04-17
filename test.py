@@ -17,6 +17,7 @@ def check_numberfile(filename, pred):
                 # Check if n satisfies the predicate
                 n = int(line.strip())
                 assert(pred(n))
+    # Return number count
     return count
 
 def run_tests():
@@ -31,7 +32,7 @@ def run_tests():
     k = 2
 
     # Run application
-    exitcode = subprocess.call(["java", "-cp", bindir, "Main", str(n), str(m)])
+    exitcode = subprocess.call(["java", "-cp", bindir, "Main", str(n), str(m), str(k)])
 
     if exitcode != 0:
         print("application failed to run")
