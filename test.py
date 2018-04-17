@@ -27,7 +27,7 @@ def run_tests():
     print("running application...")
 
     # Run application
-    exitcode = subprocess.call(["java", "-cp", bindir, "Main"])
+    exitcode = subprocess.call(["java", "-cp", bindir, "Main", "1000000", "1"])
 
     if exitcode != 0:
         print("application failed to run")
@@ -37,7 +37,7 @@ def run_tests():
 
     evenfile = join(bindir, "even-numbers")
 
-    print("testing even numbers:", abspath(evenfile))
+    print("checking even numbers:", abspath(evenfile))
 
     passed, n = test_numberfile(evenfile, lambda n : (n % 2)  == 0)
     
@@ -49,7 +49,7 @@ def run_tests():
 
     oddfile = join(bindir, "odd-numbers")
 
-    print("testing odd numbers:", abspath(oddfile))
+    print("checking odd numbers:", abspath(oddfile))
 
     passed, n = test_numberfile(oddfile, lambda n : (n % 2)  != 0)
     

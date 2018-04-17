@@ -5,18 +5,18 @@ import java.util.Random;
  */
 class RandomNumberGenerator implements Runnable
 {
-    private BoundedBuffer<Integer> buffer;
+    private Channel<Integer> chan;
     private Random rand;
     private int numberCount;
 
     /**
      * Construct a RNG object
-     * @param buffer output buffer
+     * @param chan output channel
      * @param numberCount number of numbers to generate
      */
-    public RandomNumberGenerator(BoundedBuffer<Integer> buffer, int numberCount)
+    public RandomNumberGenerator(Channel<Integer> chan, int numberCount)
     {
-        this.buffer = buffer;
+        this.chan = chan;
         this.rand = new Random();
         this.numberCount = numberCount;
     }
@@ -27,12 +27,10 @@ class RandomNumberGenerator implements Runnable
         {
             for (int i = 0; i < this.numberCount; i++)
             {
-                this.buffer.put(this.rand.nextInt(Integer.MAX_VALUE));
+                this.chan.put(this.rand.nextInt(Integer.MAX_VALUE));
             }
 
-            //Signals consumers to exit - todo: fix this
-            this.buffer.put(null);
-            this.buffer.put(null);
+            this.chan.close();
         }
         catch (InterruptedException e)
         {

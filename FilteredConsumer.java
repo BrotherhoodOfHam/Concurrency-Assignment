@@ -4,19 +4,19 @@ import java.io.PrintWriter;
 import java.util.function.Predicate;
 
 /**
- * Filter Task
+ * FilteredConsumer Task
  * 
  * Consumes objects from a given buffer that satisfy a given predicate.
  */
-public class Filter<E> implements Runnable
+public class FilteredConsumer<E> implements Runnable
 {
-    private BoundedBuffer<E> buffer;
+    private Channel<E> chan;
     private PrintWriter output;
     private Predicate<E> predicate;
 
-    public Filter(BoundedBuffer<E> buffer, Writer output, Predicate<E> predicate)
+    public FilteredConsumer(Channel<E> chan, Writer output, Predicate<E> predicate)
     {
-        this.buffer = buffer;
+        this.chan = chan;
         this.output = new PrintWriter(output);
         this.predicate = predicate;
     }
@@ -27,15 +27,17 @@ public class Filter<E> implements Runnable
         {
             while (true)
             {
-                E i = buffer.takeIf(predicate);
+                E i = chan.takeIf(predicate);
 
-                if (i == null)
+                if (i != null)
+                {
+                    System.out.println(i.toString());
+                    output.println(i.toString());
+                }
+                else
                 {
                     break;
                 }
-
-                System.out.println(i.toString());
-                output.println(i.toString());
             }
         }
         catch (InterruptedException e)
