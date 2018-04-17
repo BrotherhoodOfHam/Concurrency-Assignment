@@ -6,19 +6,18 @@ from os.path import dirname, join, abspath
 
 """
     Tests if a given file containing a list of numbers satisfies the given predicate
-
-    Returns true if the test passes, or false if it fails and the value that caused it to fail
 """
-def test_numberfile(filename, pred):
+def check_numberfile(filename, pred):
+    count = 0
     with open(filename, "r") as f:
         for line in f.readlines():
             # Ignore whitespace lines
             if not line.isspace():
+                count += 1
                 # Check if n satisfies the predicate
                 n = int(line.strip())
-                if not pred(n):
-                    return False, n
-    return True, 0
+                assert(pred(n))
+    return count
 
 def run_tests():
 
@@ -26,8 +25,13 @@ def run_tests():
 
     print("running application...")
 
+    # Parameters
+    n = 100000
+    m = 1
+    k = 2
+
     # Run application
-    exitcode = subprocess.call(["java", "-cp", bindir, "Main", "1000000", "1"])
+    exitcode = subprocess.call(["java", "-cp", bindir, "Main", str(n), str(m)])
 
     if exitcode != 0:
         print("application failed to run")
@@ -35,27 +39,21 @@ def run_tests():
 
     #####################################################################
 
-    evenfile = join(bindir, "even-numbers")
+    ncount = 0
 
+    evenfile = join(bindir, "even-numbers")
     print("checking even numbers:", abspath(evenfile))
 
-    passed, n = test_numberfile(evenfile, lambda n : (n % 2)  == 0)
+    ncount += check_numberfile(evenfile, lambda n : (n % 2)  == 0)
     
-    if not passed:
-        print(n, "is not even")
-        return -1
-
-    #####################################################################
 
     oddfile = join(bindir, "odd-numbers")
-
     print("checking odd numbers:", abspath(oddfile))
 
-    passed, n = test_numberfile(oddfile, lambda n : (n % 2)  != 0)
-    
-    if not passed:
-        print(n, "is not odd")
-        return -1
+    ncount += check_numberfile(oddfile, lambda n : (n % 2)  != 0)
+
+    print(ncount, "numbers generated.")
+    assert(ncount == n)
 
     #####################################################################
 

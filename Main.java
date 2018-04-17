@@ -1,5 +1,7 @@
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.function.Predicate;
 
 /**
@@ -9,9 +11,10 @@ public class Main
 {
     public static void main(String[] args) throws InterruptedException, IOException
     {
-        //Number of numbers to produce - n,m
+        //Number of numbers to produce - n,m,k
         int numberGenCount = 1000;
         int channelSize = 4;
+        int taskNumber = 2;
 
         //Optional command line options
         try
@@ -46,20 +49,15 @@ public class Main
             Predicate<Integer> isOdd = isEven.negate();
 
             RandomNumberGenerator pr = new RandomNumberGenerator(chan, numberGenCount);
-            
-            Thread t0 = new Thread(new FilteredConsumer<Integer>(chan, evenWriter, isEven));
-            Thread t1 = new Thread(new FilteredConsumer<Integer>(chan, oddWriter, isOdd));
+
+            ExecutorService executor = Executors.newFixedThreadPool(taskNumber);
+            executor.submit(new FilteredConsumer<Integer>(chan, evenWriter, isEven));
+            executor.submit(new FilteredConsumer<Integer>(chan, oddWriter, isOdd));
 
             System.out.println("start");
-
-            t0.start();
-            t1.start();
-
             pr.run();
 
-            t0.join();
-            t1.join();
-
+            executor.shutdown();
             System.out.println("done");
         }
         finally
