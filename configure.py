@@ -61,7 +61,7 @@ def configure(srcdir, bindir):
         w.newline()
 
         # Glob all java files in the source dir
-        globexpr = path.join(srcdir, "*.java")
+        globexpr = path.join(srcdir, "src/*.java")
 
         src_list = glob.glob(globexpr)
         class_list = []
